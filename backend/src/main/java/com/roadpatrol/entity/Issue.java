@@ -1,5 +1,6 @@
 package com.roadpatrol.entity;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -53,4 +54,13 @@ public class Issue extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cluster_id")
     private IssueCluster cluster;
+
+
+    private Float aiConfidenceScore;
+
+private Boolean aiVerified;
+
+private String aiDetectionLabel;
+
+private String spamReason;
 }

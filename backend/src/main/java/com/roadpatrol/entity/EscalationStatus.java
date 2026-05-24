@@ -1,7 +1,8 @@
 package com.roadpatrol.entity;
 
 public enum EscalationStatus {
-    SENT,
+        SENT,
     ACKNOWLEDGED,
-    FAILED
+    RESOLVED,
+    REJECTED
 }

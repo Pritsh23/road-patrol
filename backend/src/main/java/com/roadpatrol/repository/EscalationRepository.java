@@ -7,9 +7,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import com.roadpatrol.entity.Escalation;
+import org.springframework.data.repository.query.Param;
 
 @Repository
-public interface EscalationRepository extends JpaRepository<Escalation, UUID> {
+public interface EscalationRepository
+        extends JpaRepository<Escalation, UUID> {
 
     List<Escalation> findByIssueId(UUID issueId);
 
@@ -18,5 +20,8 @@ public interface EscalationRepository extends JpaRepository<Escalation, UUID> {
         WHERE e.status = 'SENT'
         AND e.createdAt < :threshold
     """)
-    List<Escalation> findPendingEscalations(LocalDateTime threshold);
+    List<Escalation> findPendingEscalations(
+            @Param("threshold")
+            LocalDateTime threshold
+    );
 }

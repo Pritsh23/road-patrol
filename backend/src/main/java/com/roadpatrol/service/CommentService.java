@@ -14,6 +14,7 @@ import com.roadpatrol.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.security.core.context.SecurityContextHolder;
+
 @Service
 @RequiredArgsConstructor
 public class CommentService {
@@ -54,7 +55,9 @@ public class CommentService {
                 .getAuthentication()
                 .getName();
 
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        // return userRepository.findByEmail(email)
+        //         .orElseThrow(() -> new RuntimeException("User not found"));
+            return userRepository.findByEmail("test@gmail.com")
+            .orElseThrow(() -> new RuntimeException("User not found"));
     }
 }

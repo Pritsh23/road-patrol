@@ -1,13 +1,18 @@
 package com.roadpatrol.dto;
-import com.roadpatrol.entity.IssueCategory;
 
 import lombok.*;
 
-@Getter @Setter @Builder
+@Data
+@Builder
 public class AIResponseDTO {
 
-    private IssueCategory detectedCategory;
-    private float severityScore;
-    private boolean isSpam;
-    private boolean isDuplicate;
+    private String detectedCategory;
+
+    private Float severityScore;
+
+    private Boolean spam;
+
+    private Float confidenceScore;
+
+    private String spamReason;
 }
