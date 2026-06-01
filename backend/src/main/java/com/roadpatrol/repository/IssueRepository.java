@@ -89,4 +89,17 @@ public interface IssueRepository extends JpaRepository<Issue, UUID> {
     // ========================================
 
     List<Issue> findByIsSpamFalse();
+
+    long countByStatus(IssueStatus status);
+
+
+    @Query("""
+SELECT i.category, COUNT(i)
+FROM Issue i
+GROUP BY i.category
+""")
+List<Object[]> countIssuesByCategory();
+
+List<Issue> findTop5ByOrderByCreatedAtDesc();
+
 }

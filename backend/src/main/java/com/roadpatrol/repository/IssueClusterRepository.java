@@ -24,4 +24,6 @@ public interface IssueClusterRepository extends JpaRepository<IssueCluster, UUID
             double lng,
             double radius
     );
+
+    List<IssueCluster> findTop5ByOrderByTotalReportsDesc();
 }

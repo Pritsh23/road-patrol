@@ -265,4 +265,18 @@ public class IssueServiceImpl implements IssueService {
             .build();
 }
 
+// =====================================================
+// GET MY ISSUES        
+// =====================================================
+
+@Override
+public List<IssueResponseDTO> getMyIssues() {
+
+    User user = getCurrentUser();
+
+    return issueRepository.findByUserId(user.getId())
+            .stream()
+            .map(this::mapToDTO)
+            .toList();
+}
     }

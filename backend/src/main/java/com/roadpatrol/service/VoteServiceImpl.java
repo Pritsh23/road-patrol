@@ -1,5 +1,8 @@
 package com.roadpatrol.service;
+import java.beans.Transient;
 import java.util.Optional;
+import java.util.UUID;
+
 import org.springframework.stereotype.Service;
 import com.roadpatrol.dto.VoteRequestDTO;
 import com.roadpatrol.dto.VoteResponseDTO;
@@ -11,7 +14,7 @@ import com.roadpatrol.repository.UserRepository;
 import com.roadpatrol.repository.VoteRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
-
+import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class VoteServiceImpl implements VoteService {
@@ -54,9 +57,34 @@ public class VoteServiceImpl implements VoteService {
                 .getAuthentication()
                 .getName();
 
-        // return userRepository.findByEmail(email)
-        //         .orElseThrow(() -> new RuntimeException("User not found"));
-            return userRepository.findByEmail("test@gmail.com")
-            .orElseThrow(() -> new RuntimeException("User not found"));
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+      
     }
+    @Override
+public void removeVote(UUID issueId) {
+
+    User user = getCurrentUser();
+
+    Issue issue = issueRepository.findById(issueId)
+            .orElseThrow(() ->
+                    new RuntimeException("Issue not found"));
+
+    voteRepository.deleteByUserAndIssue(
+            user,
+            issue
+    );
+}
+@Override
+@Transactional
+public VoteResponseDTO getVoteCount(UUID issueId) {
+
+    int totalVotes =
+            voteRepository.countUpvotes(issueId);
+
+    return VoteResponseDTO.builder()
+            .issueId(issueId)
+            .totalVotes(totalVotes)
+            .build();
+}
 }

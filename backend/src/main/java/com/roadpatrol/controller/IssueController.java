@@ -23,7 +23,14 @@ public class IssueController {
     @PostMapping
     public IssueResponseDTO createIssue(@RequestBody IssueRequestDTO dto) {
         return issueService.createIssue(dto);
-    }
+    } 
+    
+    // 📋 Get My Issues
+    @GetMapping("/my-issues")
+public List<IssueResponseDTO> getMyIssues() {
+
+    return issueService.getMyIssues();
+}
 
     // 🔍 Get Issue by ID
     @GetMapping("/{id}")
@@ -49,4 +56,5 @@ public class IssueController {
     ) {
         return issueService.updateIssueStatus(id, status);
     }
+
 }

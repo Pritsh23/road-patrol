@@ -14,7 +14,12 @@ public class EscalationScheduler {
     private final EscalationService escalationService;
 
     @Scheduled(fixedRate = 3600000) // every 1 hour
+    // @Scheduled(fixedRate = 10000)
     public void runEscalation() {
+         System.out.println(
+                "Running escalation scheduler..."
+        );
+
         escalationService.checkAndEscalateIssues();
     }
 }

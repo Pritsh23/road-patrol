@@ -1,5 +1,7 @@
 package com.roadpatrol.controller;
 
+import java.util.UUID;
+
 import org.springframework.web.bind.annotation.*;
 
 import com.roadpatrol.dto.VoteRequestDTO;
@@ -18,5 +20,22 @@ public class VoteController {
     @PostMapping
     public VoteResponseDTO vote(@RequestBody VoteRequestDTO dto) {
         return voteService.vote(dto);
+    }
+    @DeleteMapping("/{issueId}")
+    public String removeVote(
+            @PathVariable UUID issueId
+    ) {
+
+        voteService.removeVote(issueId);
+
+        return "Vote removed successfully";
+    }
+
+    @GetMapping("/{issueId}")
+    public VoteResponseDTO getVoteCount(
+            @PathVariable UUID issueId
+    ) {
+
+        return voteService.getVoteCount(issueId);
     }
 }

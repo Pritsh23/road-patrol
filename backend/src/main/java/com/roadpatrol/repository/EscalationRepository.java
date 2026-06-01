@@ -24,4 +24,11 @@ public interface EscalationRepository
             @Param("threshold")
             LocalDateTime threshold
     );
+
+    @Query("""
+    SELECT e.escalationLevel, COUNT(e)
+    FROM Escalation e
+    GROUP BY e.escalationLevel
+""")
+List<Object[]> countEscalationsByLevel();
 }
