@@ -3,6 +3,7 @@ package com.roadpatrol.controller;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import com.roadpatrol.dto.IssueRequestDTO;
@@ -26,6 +27,7 @@ public class IssueController {
     } 
     
     // 📋 Get My Issues
+    @PreAuthorize("hasRole('USER')")
     @GetMapping("/my-issues")
 public List<IssueResponseDTO> getMyIssues() {
 
@@ -49,7 +51,8 @@ public List<IssueResponseDTO> getMyIssues() {
     }
 
     // 🔄 Update Status
-    @PatchMapping("/{id}/status")
+    @PreAuthorize("hasAnyRole('AUTHORITY','ADMIN')")
+@PatchMapping("/{id}/status")
     public IssueResponseDTO updateStatus(
             @PathVariable UUID id,
             @RequestParam IssueStatus status

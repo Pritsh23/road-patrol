@@ -2,6 +2,7 @@ package com.roadpatrol.auth;
 
 import com.roadpatrol.dto.*;
 import com.roadpatrol.entity.User;
+import com.roadpatrol.entity.UserRole;
 import com.roadpatrol.repository.UserRepository;
 import com.roadpatrol.security.JWTService;
 
@@ -26,8 +27,9 @@ public class AuthService {
                 .password(
                         passwordEncoder.encode(dto.getPassword())
                 )
-                .build();
-
+                
+        .role(UserRole.USER)
+        .build();
         userRepository.save(user);
     }
 

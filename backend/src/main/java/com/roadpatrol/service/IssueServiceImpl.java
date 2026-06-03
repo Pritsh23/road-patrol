@@ -12,9 +12,11 @@ import com.roadpatrol.dto.IssueRequestDTO;
 import com.roadpatrol.dto.IssueResponseDTO;
 import com.roadpatrol.entity.Issue;
 import com.roadpatrol.entity.IssueCluster;
+import com.roadpatrol.entity.IssueImage;
 import com.roadpatrol.entity.IssueStatus;
 import com.roadpatrol.entity.User;
 import com.roadpatrol.repository.IssueClusterRepository;
+import com.roadpatrol.repository.IssueImageRepository;
 import com.roadpatrol.repository.IssueRepository;
 import com.roadpatrol.repository.UserRepository;
 import com.roadpatrol.repository.VoteRepository;
@@ -30,6 +32,7 @@ public class IssueServiceImpl implements IssueService {
     private final AIService aiService;
     private final IssueClusterRepository clusterRepository;
     private final VoteRepository voteRepository;
+    private final IssueImageRepository issueImageRepository;
 
     // =====================================================
     // CREATE ISSUE
@@ -39,7 +42,8 @@ public class IssueServiceImpl implements IssueService {
     public IssueResponseDTO createIssue(IssueRequestDTO dto) {
 
         User user = getCurrentUser();
-
+        boolean duplicate =
+        isDuplicateIssue(dto);
         Issue issue = Issue.builder()
                 .title(dto.getTitle())
                 .description(dto.getDescription())
@@ -49,6 +53,7 @@ public class IssueServiceImpl implements IssueService {
                 .status(IssueStatus.PENDING)
                 .severityScore(5.0f)
                 .isSpam(false)
+                .isDuplicate(duplicate)
                 .user(user)
                 .build();
 
@@ -70,7 +75,22 @@ public class IssueServiceImpl implements IssueService {
         );
 
         issueRepository.save(issue);
+       if (dto.getImageUrls() != null &&
+    !dto.getImageUrls().isEmpty()) {
 
+    List<IssueImage> images =
+            dto.getImageUrls()
+                    .stream()
+                    .map(url ->
+                            IssueImage.builder()
+                                    .issue(issue)
+                                    .imageUrl(url)
+                                    .build()
+                    )
+                    .toList();
+
+    issueImageRepository.saveAll(images);
+}
         return mapToDTO(issue);
     }
 
@@ -236,7 +256,11 @@ public class IssueServiceImpl implements IssueService {
         userId = issue.getUser().getId();
         userName = issue.getUser().getName();
     }
-
+      List<String> imageUrls =
+        issueImageRepository.findByIssue(issue)
+                .stream()
+                .map(IssueImage::getImageUrl)
+                .toList();
     return IssueResponseDTO.builder()
             .id(issue.getId())
             .title(issue.getTitle())
@@ -261,7 +285,7 @@ public class IssueServiceImpl implements IssueService {
             .aiConfidenceScore(issue.getAiConfidenceScore())
             .aiDetectionLabel(issue.getAiDetectionLabel())
             .spamReason(issue.getSpamReason())
-
+             .imageUrls(imageUrls)
             .build();
 }
 
@@ -279,4 +303,60 @@ public List<IssueResponseDTO> getMyIssues() {
             .map(this::mapToDTO)
             .toList();
 }
+
+// =====================================================
+// DUPLICATE DETECTION
+// =====================================================
+
+private boolean isDuplicateIssue(IssueRequestDTO dto) {
+
+    // 25 meters = 0.025 km
+
+    List<Issue> nearbyIssues =
+            issueRepository.findNearbyIssues(
+                    dto.getLatitude(),
+                    dto.getLongitude(),
+                    0.025
+            );
+
+    for (Issue existing : nearbyIssues) {
+
+        // SAME CATEGORY REQUIRED
+
+        if (existing.getCategory() != dto.getCategory()) {
+            continue;
+        }
+
+        String newTitle =
+                dto.getTitle().toLowerCase();
+
+        String oldTitle =
+                existing.getTitle().toLowerCase();
+
+        String[] newWords =
+                newTitle.split("\\s+");
+
+        int matchingWords = 0;
+
+        for (String word : newWords) {
+
+            if (oldTitle.contains(word)) {
+                matchingWords++;
+            }
+        }
+
+        double similarity =
+                (double) matchingWords
+                        / newWords.length;
+
+        // 60% TITLE MATCH
+
+        if (similarity >= 0.60) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
     }
