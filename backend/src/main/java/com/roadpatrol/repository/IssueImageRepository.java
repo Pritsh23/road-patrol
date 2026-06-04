@@ -9,9 +9,14 @@ import org.springframework.stereotype.Repository;
 import com.roadpatrol.entity.Issue;
 import com.roadpatrol.entity.IssueImage;
 
+import org.springframework.transaction.annotation.Transactional;
+
 @Repository
 public interface IssueImageRepository
         extends JpaRepository<IssueImage, UUID> {
 
     List<IssueImage> findByIssue(Issue issue);
+
+    @Transactional
+void deleteByIssue(Issue issue);
 }

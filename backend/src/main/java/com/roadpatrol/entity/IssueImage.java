@@ -17,6 +17,6 @@ public class IssueImage {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "issue_id")
     private Issue issue;
-
+   private String publicId;
     private String imageUrl;
 }

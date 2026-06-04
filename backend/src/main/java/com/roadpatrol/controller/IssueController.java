@@ -3,6 +3,7 @@ package com.roadpatrol.controller;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -60,4 +61,16 @@ public List<IssueResponseDTO> getMyIssues() {
         return issueService.updateIssueStatus(id, status);
     }
 
+    // 🗑️ Delete Issue
+@DeleteMapping("/{issueId}")
+public ResponseEntity<String> deleteIssue(
+        @PathVariable UUID issueId
+) {
+
+    issueService.deleteIssue(issueId);
+
+    return ResponseEntity.ok(
+            "Issue deleted successfully"
+    );
+}
 }

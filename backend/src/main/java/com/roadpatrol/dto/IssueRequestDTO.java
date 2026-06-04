@@ -26,5 +26,5 @@ public class IssueRequestDTO {
     @NotNull
     private Double longitude;
 
-    private List<String> imageUrls; // S3 URLs (or temp upload refs)
+    private List<UploadResponseDTO> images; 
 }

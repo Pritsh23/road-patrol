@@ -12,4 +12,5 @@ public interface IssueService {
     List<IssueResponseDTO> getNearbyIssues(double lat, double lng, double radius);
     IssueResponseDTO updateIssueStatus(UUID issueId, IssueStatus status);
     List<IssueResponseDTO> getMyIssues();
+    void deleteIssue(UUID issueId);
 }

@@ -7,7 +7,10 @@ import java.util.UUID;
 
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import com.roadpatrol.dto.IssueRequestDTO;
 import com.roadpatrol.dto.IssueResponseDTO;
 import com.roadpatrol.entity.Issue;
@@ -15,6 +18,7 @@ import com.roadpatrol.entity.IssueCluster;
 import com.roadpatrol.entity.IssueImage;
 import com.roadpatrol.entity.IssueStatus;
 import com.roadpatrol.entity.User;
+import com.roadpatrol.entity.UserRole;
 import com.roadpatrol.repository.IssueClusterRepository;
 import com.roadpatrol.repository.IssueImageRepository;
 import com.roadpatrol.repository.IssueRepository;
@@ -33,7 +37,7 @@ public class IssueServiceImpl implements IssueService {
     private final IssueClusterRepository clusterRepository;
     private final VoteRepository voteRepository;
     private final IssueImageRepository issueImageRepository;
-
+    private final Cloudinary cloudinary;
     // =====================================================
     // CREATE ISSUE
     // =====================================================
@@ -75,16 +79,17 @@ public class IssueServiceImpl implements IssueService {
         );
 
         issueRepository.save(issue);
-       if (dto.getImageUrls() != null &&
-    !dto.getImageUrls().isEmpty()) {
+   if (dto.getImages() != null &&
+    !dto.getImages().isEmpty()) {
 
     List<IssueImage> images =
-            dto.getImageUrls()
+            dto.getImages()
                     .stream()
-                    .map(url ->
+                    .map(img ->
                             IssueImage.builder()
                                     .issue(issue)
-                                    .imageUrl(url)
+                                    .imageUrl(img.getImageUrl())
+                                    .publicId(img.getPublicId())
                                     .build()
                     )
                     .toList();
@@ -357,6 +362,71 @@ private boolean isDuplicateIssue(IssueRequestDTO dto) {
     }
 
     return false;
+}
+
+@Override
+@Transactional
+public void deleteIssue(UUID issueId) {
+
+    User currentUser = getCurrentUser();
+
+    Issue issue = issueRepository.findById(issueId)
+            .orElseThrow(() ->
+                    new RuntimeException("Issue not found"));
+
+    // Allow only owner or ADMIN
+
+    boolean isOwner =
+            issue.getUser().getId()
+                    .equals(currentUser.getId());
+
+    boolean isAdmin =
+            currentUser.getRole() == UserRole.ADMIN;
+
+    if (!isOwner && !isAdmin) {
+        throw new RuntimeException(
+                "You are not allowed to delete this issue"
+        );
+    }
+
+    // =====================================
+    // DELETE CLOUDINARY IMAGES
+    // =====================================
+
+    List<IssueImage> images =
+            issueImageRepository.findByIssue(issue);
+
+    for (IssueImage image : images) {
+
+        if (image.getPublicId() != null) {
+
+            try {
+
+                cloudinary.uploader().destroy(
+                        image.getPublicId(),
+                        ObjectUtils.emptyMap()
+                );
+
+            } catch (Exception e) {
+
+                throw new RuntimeException(
+                        "Failed to delete image from Cloudinary"
+                );
+            }
+        }
+    }
+
+    // =====================================
+    // DELETE IMAGE RECORDS
+    // =====================================
+
+    issueImageRepository.deleteAll(images);
+
+    // =====================================
+    // DELETE ISSUE
+    // =====================================
+
+    issueRepository.delete(issue);
 }
 
     }
